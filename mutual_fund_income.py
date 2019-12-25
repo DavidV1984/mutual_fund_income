@@ -5,18 +5,45 @@ import pandas as pd
 import numpy as np
 
 # doba v dnevih (252 dni = 1 leto)
-doba = 252
+doba = 1000
 
 # upravljavska provizija na letni osnovi
-mngt_fee = 0.0012
+mngt_fee = 0.012
 
-# ustvarimo dataframe z indeksom
-df = pd.DataFrame(index=range(1, doba + 1))
 
-# ustvarimo vplaèila
-df['R_inflow'] = np.random.choice(a=[500, 1000, 2500, 5000, 10000, 15000, 25000, 50000, 100000], size=len(df))
+def dnevni_donos():
+    # return random.gauss(0.00038, 0.0098)
+    return (np.random.choice(a=[np.random.normal(0.00038, 0.0098), -0.03], p=[0.99, 0.01]))
 
-# dodamo random dnevne donose - podatki menda za S&P 500 (normalna distribucija)
-df['D_return'] = np.random.normal(0.0038, 0.0098, len(df))
 
-print(df)
+def fund():
+    # ustvarimo dataframe z indeksom
+    df = pd.DataFrame()
+
+    # ustvarimo nakljuèna vplaèila
+    df['Inf'] = np.random.choice(a=[0, 1000, 2500, 5000, 10000, 15000, 25000, 50000, 100000],
+                                 p=[0.5, 0.2, 0.1, 0.05, 0.04, 0.03, 0.03, 0.03, 0.02],
+                                 size=doba)
+
+    # AUM brez donosa (skupna vplaèila)
+    df['Inf_sum'] = df['Inf'].cumsum()
+
+    # AUM z bruto dnevnim donosom + dnevni donos
+    AUM_d = []
+    d_return = []
+    aumd = 0
+    for row in df['Inf']:
+        ddonos = dnevni_donos()
+        izr = round(aumd * (1 + ddonos) + row, 2)
+        aumd = izr
+        AUM_d.append(izr)
+        d_return.append(ddonos)
+    df['AUM_d_b'] = AUM_d
+    df['D_return'] = d_return
+
+    df['Mngt_Fee'] = df['AUM_d_b'] * mngt_fee / 252
+
+    print(df)
+
+
+fund()

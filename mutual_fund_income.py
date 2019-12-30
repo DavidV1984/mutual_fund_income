@@ -3,6 +3,7 @@
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 # doba v dnevih (252 dni = 1 leto)
 doba = 1000
@@ -17,7 +18,7 @@ def dnevni_donos():
 
 
 def fund():
-    # ustvarimo dataframe z indeksom
+    # ustvarimo dataframe
     df = pd.DataFrame()
 
     # ustvarimo nakljuèna vplaèila
@@ -40,10 +41,14 @@ def fund():
         d_return.append(ddonos)
     df['AUM_d_b'] = AUM_d
     df['D_return'] = d_return
-
+    df['Sum_return'] = df['D_return'].cumsum()
+    df['12M_return'] = df['Sum_return'].pct_change(252)
     df['Mngt_Fee'] = df['AUM_d_b'] * mngt_fee / 252
 
-    print(df)
+    print(df.tail(15))
+
+    plt.plot(df.index, df['Sum_return'])
+    plt.show()
 
 
 fund()
